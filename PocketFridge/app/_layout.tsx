@@ -19,7 +19,7 @@ export default function RootLayout() {
     // NOTE: These paths must match your actual filenames exactly.
     // If you renamed the Helvetica file to remove spaces, update this require accordingly.
     "Helvetica-Light": require("../assets/fonts/HelveticaNeueLT45LightRegular.ttf"),
-    "Offbit-DotBold": require("../assets/fonts/Offbit-DotBold.ttf"),
+    "Offbit-DotBold": require("../assets/fonts/OffBit-DotBold.ttf"),
   });
 
   if (!fontsLoaded) {
