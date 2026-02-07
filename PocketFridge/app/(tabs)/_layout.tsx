@@ -1,49 +1,87 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';  // ← Add this import
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons'; // <--- Standard Icons, no custom component needed
+
+import HomeActive from '../../assets/icons/home-selected.svg';
+import HomeInactive from '../../assets/icons/home.svg';
+
+import CameraActive from '../../assets/icons/camera-selected.svg';
+import CameraInactive from '../../assets/icons/camera.svg';
+
+import RecipeActive from '../../assets/icons/recipe-selected.svg';
+import RecipeInactive from '../../assets/icons/recipe.svg';
+
+import ProfileActive from '../../assets/icons/profile-selected.svg';
+import ProfileInactive from '../../assets/icons/profile.svg';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0a7ea4', // Blue color for active tab
-      }}>
-      
-      {/* Tab 1: Home/Fridge */}
+
+        tabBarStyle: {
+          backgroundColor: '#B2D459',
+          height: 100,
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+          position: 'absolute',
+          shadowColor: '#000',
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          elevation: 20,
+        },
+
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          paddingTop: 20,
+          paddingBottom: 4,
+        },
+
+        tabBarLabelStyle: {
+          fontFamily: 'Helvetica-Light',
+          fontSize: 12,
+          marginTop: 4,
+        },
+
+        tabBarActiveTintColor: '#285B23',
+        tabBarInactiveTintColor: '#6F8F52',
+      }}
+    >
       <Tabs.Screen
-        name="index" // Matches index.tsx
+        name="index"
         options={{
           title: 'Fridge',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="home" color={color} />,
+          tabBarIcon: ({ focused }) =>
+            focused ? <HomeActive width={26} height={26} /> : <HomeInactive width={26} height={26} />,
         }}
       />
 
-      {/* Tab 2: Camera */}
       <Tabs.Screen
-        name="camera" // Matches camera.tsx
+        name="camera"
         options={{
           title: 'Scan',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="camera" color={color} />,
+          tabBarIcon: ({ focused }) =>
+            focused ? <CameraActive width={26} height={26} /> : <CameraInactive width={26} height={26} />,
         }}
       />
 
-      {/* Tab 3: Recipes */}
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'Cook',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="restaurant" color={color} />,
+          title: 'Recipes',
+          tabBarIcon: ({ focused }) =>
+            focused ? <RecipeActive width={26} height={26} /> : <RecipeInactive width={26} height={26} />,
         }}
       />
-      <Tabs.Screen 
-        name="test" 
-        options={{ 
-          title: "Tests",
-          tabBarIcon: ({ color }) => <Text>🧪</Text>
-        }} 
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ focused }) =>
+            focused ? <ProfileActive width={26} height={26} /> : <ProfileInactive width={26} height={26} />,
+        }}
       />
     </Tabs>
   );
