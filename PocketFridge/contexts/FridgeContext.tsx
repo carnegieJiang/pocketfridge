@@ -49,6 +49,9 @@ TOMORROW.setDate(TODAY.getDate() + 1);
 const NEXT_WEEK = new Date(TODAY); 
 NEXT_WEEK.setDate(TODAY.getDate() + 7);
 
+// ✅ Get today's date string
+const TODAY_STRING = getDateOnly(TODAY.toISOString()); // "2026-02-07"
+
 const INITIAL_FRIDGE_DATA: FridgeItem[] = [
   // --- 🔴 EXPIRING SOON ---
   {
@@ -57,7 +60,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 1,
     category: 'dairy',
     price: 4.50,
-    date_added: '2026-02-01',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(TOMORROW.toISOString()), // Expires tomorrow
     has_icon: true,
     icon_name: 'milk'
@@ -68,10 +71,10 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 2,
     category: 'meat',
     price: 12.99,
-    date_added: '2026-02-02',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(TODAY.toISOString()), // Expires today!
     has_icon: true,
-    icon_name: 'fish'
+    icon_name: 'salmon'
   },
   {
     id: 'item_broccoli',
@@ -79,7 +82,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 1,
     category: 'vegetable',
     price: 2.99,
-    date_added: '2026-02-01',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(TOMORROW.toISOString()), // Expires tomorrow
     has_icon: true,
     icon_name: 'broccoli'
@@ -92,7 +95,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 2,
     category: 'meat',
     price: 25.00,
-    date_added: '2026-02-05',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(NEXT_WEEK.toISOString()),
     has_icon: true,
     icon_name: 'beefsteak'
@@ -103,7 +106,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 12,
     category: 'dairy',
     price: 5.99,
-    date_added: '2026-02-06',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(NEXT_WEEK.toISOString()),
     has_icon: true,
     icon_name: 'egg'
@@ -114,7 +117,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 5,
     category: 'vegetable',
     price: 3.99,
-    date_added: '2026-02-04',
+    date_added: TODAY_STRING,
     date_expiring: getDateOnly(NEXT_WEEK.toISOString()),
     has_icon: true,
     icon_name: 'potato'
@@ -125,7 +128,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 1,
     category: 'dairy',
     price: 4.99,
-    date_added: '2026-01-15',
+    date_added: TODAY_STRING,
     date_expiring: null, // Never expires
     has_icon: true,
     icon_name: 'butter'
@@ -136,7 +139,7 @@ const INITIAL_FRIDGE_DATA: FridgeItem[] = [
     quantity: 1,
     category: 'grain',
     price: 1.99,
-    date_added: '2026-01-20',
+    date_added: TODAY_STRING,
     date_expiring: null, // Never expires
     has_icon: true,
     icon_name: 'spaghetti'
@@ -190,22 +193,38 @@ export function FridgeProvider({ children }: { children: React.ReactNode }) {
     // ════════════════════════════════════════════════════════
     
     const updatedFridge = [...fridgeItems];
-    
+
     enrichedItems.forEach(newItem => {
-      const existingIndex = updatedFridge.findIndex(
-        item => item.food_type.toLowerCase() === newItem.food_type.toLowerCase()
-      );
+      const existingIndex = updatedFridge.findIndex(item => {
+        // Must match food name
+        const nameMatches = item.food_type.toLowerCase().trim() === newItem.food_type.toLowerCase().trim();
+        
+        // Must match date added (same shopping day)
+        const dateMatches = item.date_added === newItem.date_added;
+        
+        return nameMatches && dateMatches;  // ✅ Both must match to merge
+      });
       
       if (existingIndex !== -1) {
-        // DUPLICATE FOUND: Add quantities and add prices
+        // DUPLICATE FOUND: Same item, same day - MERGE
         const existing = updatedFridge[existingIndex];
+        
+        console.log('✅ MERGING:', existing.food_type, existing.quantity, '+', newItem.quantity, '=', existing.quantity + newItem.quantity);
+        
         updatedFridge[existingIndex] = {
           ...existing,
           quantity: existing.quantity + newItem.quantity,  // Add quantities
-          price: (existing.price || 0) + (newItem.price || 0)  // Add prices (handle nulls)
+          price: (existing.price || 0) + (newItem.price || 0),  // Add prices
+          // Keep the earlier expiration date (more conservative)
+          date_expiring: existing.date_expiring && newItem.date_expiring
+            ? (new Date(existing.date_expiring) < new Date(newItem.date_expiring) 
+                ? existing.date_expiring 
+                : newItem.date_expiring)
+            : existing.date_expiring || newItem.date_expiring
         };
       } else {
-        // NEW ITEM: Add to fridge
+        // NEW ITEM: Different name or different day - ADD
+        console.log('➕ ADDING NEW:', newItem.food_type, 'qty:', newItem.quantity, 'date:', newItem.date_added);
         updatedFridge.push(newItem);
       }
     });
