@@ -4,9 +4,8 @@
     "strict": true,
     "jsx": "react-jsx",
 
-    "module": "commonjs",
-    "moduleResolution": "node",
-
+    "module": "esnext",             // CHANGED from "commonjs"
+    "moduleResolution": "bundler",  // CHANGED from "node"
     "paths": {
       "@/*": ["./*"]
     }
