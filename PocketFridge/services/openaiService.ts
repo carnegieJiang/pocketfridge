@@ -1,10 +1,14 @@
 import { OpenAI } from "openai";
 
-const DEDALUS_API_KEY = "dsk-test-6b5dc1d381ea-609a871e49b770b08126a85c3544590a"; 
+const DEDALUS_API_KEY = process.env.EXPO_PUBLIC_DEDALUS_KEY;
 
+// Safety check (Optional but good for debugging)
+if (!DEDALUS_API_KEY) {
+  throw new Error("Missing API Key. could it find .env file?");
+}
 const client = new OpenAI({ 
   apiKey: DEDALUS_API_KEY, 
-  baseURL: "https://api.dedaluslabs.ai/v1", 
+  baseURL: "https://api.dedaluslabs.ai/v1",
   dangerouslyAllowBrowser: true 
 });
 
@@ -23,20 +27,22 @@ export async function parseReceipt(base64Image: string) {
         {
           role: "system",
           content: `You are a smart fridge assistant. Analyze the receipt image.
-          Extract every food item found. 
-          CRITICAL INSTRUCTION: If an item is a meal (like "Hotbar Meal"), break it down into its main components if listed (e.g., "Chicken Tikka", "Rice"). 
-          If quantity is not listed, assume 1.
+          Extract every food item found. If the item doesnt seem like food, don't add it to the list.
+          Assume the quantity based on the weight and price (e.g. if chicken breast costs $13, assume quantity is like 4 servings).
           Return ONLY a valid JSON object with this EXACT structure:
           {
-            "items": [
+            "new_foods": [
               { 
                 "food_type": "Carrot", 
                 "quantity": 10, 
                 "price": 3.99, 
-                "expiration_days": 7 
+                "category": "vegetable",
+                "date_added": "2026-02-10",  // Use current date in YYYY-MM-DD format
+                "date_expiring": "2026-02-17" // Use current date + expiration_days in YYYY-MM-DD format
               }
             ]
           }
+          the category can only be one of: vegetable, fruit, carbs, meat, seafood, dairy, condiment, or other. 
           For "expiration_days", use your general knowledge to estimate how long the food lasts in a fridge (e.g., Milk = 7, Rice = 4, Canned Goods = 365).
           Do not include markdown formatting.`
         },
