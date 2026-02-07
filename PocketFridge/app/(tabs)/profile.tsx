@@ -6,39 +6,84 @@ import {
   Image,
   SafeAreaView,
   Platform,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function Profile() {
-  const name = "Kai Shaw"; // change as needed
+  const name = "Kai Shaw";
+
+  // swap these with your real receipt image URIs later
+  const receiptImages = [
+    "https://placehold.co/600x900",
+    "https://placehold.co/600x900?text=Receipt+2",
+    "https://placehold.co/600x900?text=Receipt+3",
+  ];
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Gradient header */}
         <LinearGradient
-          colors={["#7C3AED", "#4F46E5"]} // ← match your app palette
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={["#3D8D15", "#74AF36"]}
+          start={{ x: 0, y: 0.2 }}
+          end={{ x: 0.57, y: 1 }}
           style={styles.headerGradient}
         />
 
-        {/* White card */}
+        {/* Top card */}
         <View style={styles.card}>
           {/* Avatar overlapping seam */}
           <View style={styles.avatarWrap}>
             <Image
-              source={{ uri: "https://placehold.co/200x200" }} // replace with real image
+              source={{ uri: "https://placehold.co/200x200" }}
               style={styles.avatar}
             />
           </View>
 
-          {/* Name */}
+          {/* Header Name */}
           <Text style={styles.name}>{name}</Text>
 
-          {/* Extra content can go here */}
+          {/* Dashed divider */}
+          <View style={styles.dashedDivider} />
+
+          {/* Analytics section */}
+          <Text style={styles.sectionHeader}>Analytics</Text>
+
+          {/* Analytics card */}
+          <View style={styles.innerCard}>
+            <Text style={styles.muted}>Add your analytics content here</Text>
+            {/* Example rows (optional)
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Receipts scanned</Text>
+              <Text style={styles.statValue}>12</Text>
+            </View>
+            */}
+          </View>
+
+          {/* Past Receipts header */}
+          <Text style={[styles.sectionHeader, { marginTop: 18 }]}>
+            Past Receipts
+          </Text>
+
+          {/* Past receipts card */}
+          <View style={styles.innerCard}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.receiptsRow}
+            >
+              {receiptImages.map((uri, idx) => (
+                <Image key={idx} source={{ uri }} style={styles.receiptThumb} />
+              ))}
+            </ScrollView>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -56,30 +101,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
 
+  content: {
+    paddingBottom: 28,
+  },
+
   headerGradient: {
     height: 180,
     width: "100%",
   },
 
   card: {
-    flex: 1,
     width: "100%",
     backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
     borderColor: CARD_BORDER,
-    paddingTop: 64, // space for avatar overlap
+
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+
+    paddingTop: 64,
     paddingHorizontal: 20,
+    paddingBottom: 22,
     alignItems: "center",
+
+    // pulls the rounded card up to touch the gradient nicely
+    marginTop: -18,
   },
 
   avatarWrap: {
     position: "absolute",
-    top: -48, // controls how much it overlaps the gradient
+    top: -48,
     width: 96,
     height: 96,
     borderRadius: 48,
     borderWidth: 2,
-    borderColor: CARD_BORDER, // same as card border
+    borderColor: CARD_BORDER,
     backgroundColor: "#FFFFFF",
     overflow: "hidden",
     alignItems: "center",
@@ -104,10 +160,55 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    marginTop: 8,
+    marginTop: 10,
     fontSize: 22,
-    fontWeight: "700",
+    fontFamily: "Offbit-DotBold",
+    color: "#285B23",
     textAlign: "center",
-    color: "#111827",
+    letterSpacing: 0.6,
+  },
+
+  dashedDivider: {
+    width: "100%",
+    marginTop: 16,
+    marginBottom: 14,
+    borderTopWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#9CA3AF",
+  },
+
+  sectionHeader: {
+    width: "100%",
+    fontSize: 16,
+    fontFamily: "Offbit-DotBold",
+    color: "#285B23",
+    marginBottom: 10,
+  },
+
+  innerCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    borderRadius: 18,
+    padding: 14,
+  },
+
+  muted: {
+    color: "#6B7280",
+    fontSize: 14,
+  },
+
+  receiptsRow: {
+    gap: 12,
+  },
+
+  receiptThumb: {
+    width: 140,
+    height: 190,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    backgroundColor: "#F3F4F6",
   },
 });
