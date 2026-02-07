@@ -3,14 +3,19 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useFridge } from '../contexts/FridgeContext';
 
 export default function ConfirmScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const items = params.items ? JSON.parse(params.items as string) : [];
+  const receiptUri = params.receiptUri as string;
+
+  const { addItemsToFridge } = useFridge();
 
   const handleConfirm = async () => {
-    router.replace('/(tabs)');
+    addItemsToFridge(items, receiptUri);
+    router.replace('/(tabs)'); 
   };
 
   return (
