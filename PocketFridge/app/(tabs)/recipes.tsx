@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import {
   GeneratedRecipe,
   subscribeInventory,
@@ -33,6 +34,7 @@ export default function RecipeScreen() {
   const [inventory, setInventory] = useState<InventoryDict>({});
   const [recipes, setRecipes] = useState<RecipeUI[]>([]);
   const [loading, setLoading] = useState(false);
+  const tabBarHeight = useBottomTabBarHeight();
 
   // Detail overlay modal state
   const [selected, setSelected] = useState<RecipeUI | null>(null);
@@ -159,7 +161,14 @@ export default function RecipeScreen() {
             keyExtractor={(item) => item.id}
             numColumns={2}
             columnWrapperStyle={styles.gridRow}
-            contentContainerStyle={styles.gridContent}
+            contentContainerStyle={[
+              styles.gridContent,
+              {
+                paddingBottom: tabBarHeight + 24,
+                paddingRight: 12, // puts cards back where they were
+              },
+            ]}
+           
             renderItem={({ item }) => (
               <RecipeTile
                 recipe={item}
@@ -398,8 +407,7 @@ const styles = StyleSheet.create({
     opacity: 0.85,
     color: COLORS.darkGreen,
   },
-  bottomGreen: { flex: 1, paddingHorizontal: 30, paddingTop: 14 },
-
+  bottomGreen: { flex: 1, paddingLeft: 30, paddingRight: 18, paddingTop: 14 },
   recipesHeaderRow: {
     paddingVertical: 13,
     flexDirection: "row",
