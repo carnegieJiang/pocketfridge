@@ -1,15 +1,19 @@
 {
-  "extends": "./node_modules/expo/tsconfig.base",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+
     "jsx": "react-jsx",
 
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
 
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",
