@@ -1,10 +1,10 @@
-// app/(tabs)/index.tsx 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react'; // <--- ADD useRef
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useFridge } from '../../contexts/FridgeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import AllIcon from '../../assets/icons/iconmenu.svg';
+import GrainIcon from '../../assets/icons/grains.svg';
 import VegIcon from '../../assets/icons/vegetable.svg';
 import MeatIcon from '../../assets/icons/meat.svg';
 import FishIcon from '../../assets/icons/seafood.svg';
@@ -13,23 +13,19 @@ import DairyIcon from '../../assets/icons/dairy.svg';
 import MenuIcon from '../../assets/icons/hamburgermenu.svg';
 
 // ------------ CONSTANT DEFS --------------- //
-
-// --- Layout constants (tweak these to taste) ---
-const CARD_TOP = 225; // where the white card starts (distance from top)
-const FILTER_SIZE = 50; // bubble width/height (must match filterBtn)
+const CARD_TOP = 225;
+const FILTER_SIZE = 50;
 
 const FILTERS = [
-  { id: 'all', label: 'All', Icon: AllIcon },
+  // { id: 'all', label: 'All', Icon: AllIcon }, // <-- Removed 'All' since we scroll now
   { id: 'vegetable', label: 'Veg', Icon: VegIcon },
+  { id: 'fruit', label: 'Fruit', Icon: FruitIcon },
+  { id: 'grain', label: 'Grain', Icon: GrainIcon },
   { id: 'meat', label: 'Meat', Icon: MeatIcon },
   { id: 'seafood', label: 'Sea', Icon: FishIcon },
-  { id: 'fruit', label: 'Fruit', Icon: FruitIcon },
   { id: 'dairy', label: 'Dairy', Icon: DairyIcon },
 ];
 
-// to map the string_icon names from each food's data struct to the image imports
-// This way, when we get an "icon_name" from the API, we can easily find the corresponding 
-// image to display in the app.
 const FOOD_IMAGES: Record<string, any> = {
   beefsteak: require('../../assets/images/food/beefsteak.png'),
   broccoli: require('../../assets/images/food/broccoli.png'),
@@ -61,63 +57,61 @@ const FOOD_IMAGES: Record<string, any> = {
   tomatopaste: require('../../assets/images/food/tomatopaste.png'),
   wheatbread: require('../../assets/images/food/wheatbread.png'),
   yogurt: require('../../assets/images/food/yogurt.png'),
-  
-  // Fallback default
   default: require('../../assets/images/food/carrot.png'), 
 };
-// DEFINE STRICT ORDER
+
 const CATEGORY_ORDER = ['vegetable', 'fruit', 'grain', 'meat', 'seafood', 'dairy', 'other'];
 
-// HELPER function: Calculate if food should be marked red (expiring soon)
 const isExpiringSoon = (dateString: string | null) => {
   if (!dateString) return false;
   const today = new Date();
   const expDate = new Date(dateString);
-  
-  // Calculate difference in milliseconds
   const diffTime = expDate.getTime() - today.getTime();
-  // Convert to days
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  // Return true if expiring in 2 days or less (or already expired)
   return diffDays <= 2;
 };
 
-// ------------ MAIN CODE --------------- //
 export default function FridgeScreen() {
   const { fridgeItems } = useFridge();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null); // <--- Changed default to null
+
+  // REFS for Scrolling
+  const scrollRef = useRef<ScrollView>(null);
+  const sectionYCoords = useRef<Record<string, number>>({});
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, any[]> = {};
 
     fridgeItems.forEach((item) => {
-      // Normalize Category:
-      // API might return 'carbs', we map it to 'grain'
       let cat = item.category ? item.category.toLowerCase() : 'other';
       if (cat === 'carbs') cat = 'grain';
       if (cat === 'condiment') cat = 'other';
-      
-      // If category isn't in our strict list, dump it in 'other'
       if (!CATEGORY_ORDER.includes(cat)) cat = 'other';
 
-      // Apply Filter
-      if (activeFilter !== 'all' && cat !== activeFilter) return;
-
+      // REMOVED FILTER LOGIC HERE -> We want to show everything!
+      
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(item);
     });
 
     return groups;
-  }, [fridgeItems, activeFilter]);
+  }, [fridgeItems]); // <--- Removed activeFilter dependency
 
-  // use the table to match each food with an image
   const getFoodImage = (iconName: string | null) => {
-    console.log("Getting image for icon name: %s", iconName);
     if (iconName && FOOD_IMAGES[iconName]) {
       return FOOD_IMAGES[iconName];
     }
     return FOOD_IMAGES['default'];
+  };
+
+  // SCROLL LOGIC
+  const scrollToCategory = (categoryId: string) => {
+    setActiveFilter(categoryId);
+    const y = sectionYCoords.current[categoryId];
+    
+    if (y !== undefined && scrollRef.current) {
+      scrollRef.current.scrollTo({ y: y, animated: true });
+    }
   };
 
   return (
@@ -137,60 +131,56 @@ export default function FridgeScreen() {
           </TouchableOpacity>
         </View>
       </View>
-<View style={styles.sheetCard}>
-        <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
+
+      <View style={styles.sheetCard}>
+        <ScrollView 
+          ref={scrollRef} // <--- Attach Ref
+          style={styles.mainScroll} 
+          showsVerticalScrollIndicator={false}
+          onScrollBeginDrag={() => setActiveFilter(null)} // <--- Untoggle when user drags
+          scrollEventThrottle={16}
+        >
           {fridgeItems.length === 0 ? (
             <Text style={styles.emptyText}>Fridge is empty! 🛒</Text>
           ) : (
-            // 3. RENDER BY STRICT ORDER
             CATEGORY_ORDER.map((category) => {
               const items = groupedItems[category];
-              // Don't render empty sections
               if (!items || items.length === 0) return null;
 
               return (
-                <View key={category} style={styles.sectionContainer}>
-                  {/* Capitalize Title */}
+                <View 
+                  key={category} 
+                  style={styles.sectionContainer}
+                  // MEASURE Y POSITION
+                  onLayout={(event) => {
+                    const layout = event.nativeEvent.layout;
+                    sectionYCoords.current[category] = layout.y;
+                  }}
+                >
                   <Text style={styles.sectionTitle}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </Text>
 
                   <View style={styles.gridContainer}>
-                    {items.map((item) => {
-                      
-                      // 🔍 DEBUG: Print Expiry Info to Console
-                      if (item.date_expiring) {
-                        const today = new Date();
-                        const exp = new Date(item.date_expiring);
-                        const diff = exp.getTime() - today.getTime();
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                        console.log(`[Fridge] ${item.food_type}: Exp ${item.date_expiring} (${days} days left)`);
-                      } else {
-                        console.log(`[Fridge] ${item.food_type}: No Expiration Date`);
-                      }
-
-                      return (
-                        <View key={item.id} style={styles.gridItem}>
-                          
-                          {/* 4. CHECK EXPIRY DATE (<= 2 Days) */}
-                          {isExpiringSoon(item.date_expiring) && (
-                            <View style={styles.notificationBubble}>
-                              <Text style={styles.notifText}>!</Text>
-                            </View>
-                          )}
-
-                          <View style={styles.imageCard}>
-                            {item.icon_name ? (
-                              <Image source={getFoodImage(item.icon_name)} style={styles.foodImage} />
-                            ) : (
-                              <Text style={{ fontSize: 30 }}>📦</Text>
-                            )}
+                    {items.map((item) => (
+                      <View key={item.id} style={styles.gridItem}>
+                        {isExpiringSoon(item.date_expiring) && (
+                          <View style={styles.notificationBubble}>
+                            <Text style={styles.notifText}>!</Text>
                           </View>
+                        )}
 
-                          <Text style={styles.foodLabel}>{item.food_type}</Text>
+                        <View style={styles.imageCard}>
+                          {item.icon_name ? (
+                            <Image source={getFoodImage(item.icon_name)} style={styles.foodImage} />
+                          ) : (
+                            <Text style={{ fontSize: 30 }}>📦</Text>
+                          )}
                         </View>
-                      );
-                    })}
+
+                        <Text style={styles.foodLabel}>{item.food_type}</Text>
+                      </View>
+                    ))}
                   </View>
 
                   <View style={styles.separator} />
@@ -213,7 +203,7 @@ export default function FridgeScreen() {
             <TouchableOpacity
               key={filter.id}
               style={[styles.filterBtn, activeFilter === filter.id && styles.filterBtnActive]}
-              onPress={() => setActiveFilter(filter.id)}
+              onPress={() => scrollToCategory(filter.id)} // <--- Call Scroll Function
             >
               <filter.Icon width={22} height={22} />
             </TouchableOpacity>
