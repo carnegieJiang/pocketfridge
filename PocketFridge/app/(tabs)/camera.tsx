@@ -22,7 +22,7 @@ export default function CameraScreen() {
 
     // 2. Open Camera (Using the option YOU said works)
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.Images, // <--- Reverted to what works for you
+      mediaTypes: ImagePicker.Images,
       base64: true, 
       quality: 0.5, 
     });

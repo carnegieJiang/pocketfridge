@@ -1,4 +1,4 @@
-// _layout.tsx
+// app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons'; // <--- Standard Icons, no custom component needed
