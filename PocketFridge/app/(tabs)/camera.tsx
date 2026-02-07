@@ -67,7 +67,7 @@ export default function CameraScreen() {
     setLoading(false);
   };
 
-  // --- KAI'S DESIGN: PROCESSING SCREEN ---
+  // --- PROCESSING SCREEN ---
   if (loading && imageUri) {
     return (
       <LinearGradient 
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' },
   instructions: { fontSize: 16, marginBottom: 50, color: '#666' },
   
-  // Kai's Design Styles
+  // Design Styles
   gradientContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   processTitle: { 
     fontFamily: 'Offbit-DotBold',

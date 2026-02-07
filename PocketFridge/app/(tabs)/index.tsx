@@ -1,3 +1,4 @@
+// app/(tabs)/index.tsx 
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useFridge } from '../../contexts/FridgeContext';
@@ -10,6 +11,8 @@ import FishIcon from '../../assets/icons/seafood.svg';
 import FruitIcon from '../../assets/icons/fruit.svg';
 import DairyIcon from '../../assets/icons/dairy.svg';
 import MenuIcon from '../../assets/icons/hamburgermenu.svg';
+
+// ------------ CONSTANT DEFS --------------- //
 
 // --- Layout constants (tweak these to taste) ---
 const CARD_TOP = 225; // where the white card starts (distance from top)
@@ -24,6 +27,63 @@ const FILTERS = [
   { id: 'dairy', label: 'Dairy', Icon: DairyIcon },
 ];
 
+// to map the string_icon names from each food's data struct to the image imports
+// This way, when we get an "icon_name" from the API, we can easily find the corresponding 
+// image to display in the app.
+const FOOD_IMAGES: Record<string, any> = {
+  beefsteak: require('../../assets/images/food/beefsteak.png'),
+  broccoli: require('../../assets/images/food/broccoli.png'),
+  butter: require('../../assets/images/food/butter.png'),
+  carrot: require('../../assets/images/food/carrot.png'),
+  chickenbreast: require('../../assets/images/food/chickenbreast.png'),
+  chickenbroth: require('../../assets/images/food/chickenbroth.png'),
+  cucumber: require('../../assets/images/food/cucumber.png'),
+  egg: require('../../assets/images/food/egg.png'),
+  garlic: require('../../assets/images/food/garlic.png'),
+  greenbean: require('../../assets/images/food/greenbean.png'),
+  greenbellpepper: require('../../assets/images/food/greenbellpepper.png'),
+  heavycream: require('../../assets/images/food/heavycream.png'),
+  impossibleburger: require('../../assets/images/food/impossibleburger.png'),
+  jalapeno: require('../../assets/images/food/jalapeno.png'),
+  ketchup: require('../../assets/images/food/ketchup.png'),
+  lime: require('../../assets/images/food/lime.png'),
+  milk: require('../../assets/images/food/milk.png'),
+  parmesan: require('../../assets/images/food/parmesan.png'),
+  peanutbutter: require('../../assets/images/food/peanutbutter.png'),
+  potato: require('../../assets/images/food/potato.png'),
+  redbellpepper: require('../../assets/images/food/redbellpepper.png'),
+  rigatoni: require('../../assets/images/food/rigatoni.png'),
+  salmon: require('../../assets/images/food/salmon.png'),
+  shallot: require('../../assets/images/food/shallot.png'),
+  shrimp: require('../../assets/images/food/shrimp.png'),
+  spaghetti: require('../../assets/images/food/spaghetti.png'),
+  tomato: require('../../assets/images/food/tomato.png'),
+  tomatopaste: require('../../assets/images/food/tomatopaste.png'),
+  wheatbread: require('../../assets/images/food/wheatbread.png'),
+  yogurt: require('../../assets/images/food/yogurt.png'),
+  
+  // Fallback default
+  default: require('../../assets/images/food/carrot.png'), 
+};
+// DEFINE STRICT ORDER
+const CATEGORY_ORDER = ['vegetable', 'fruit', 'grain', 'meat', 'seafood', 'dairy', 'other'];
+
+// HELPER function: Calculate if food should be marked red (expiring soon)
+const isExpiringSoon = (dateString: string | null) => {
+  if (!dateString) return false;
+  const today = new Date();
+  const expDate = new Date(dateString);
+  
+  // Calculate difference in milliseconds
+  const diffTime = expDate.getTime() - today.getTime();
+  // Convert to days
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Return true if expiring in 2 days or less (or already expired)
+  return diffDays <= 2;
+};
+
+// ------------ MAIN CODE --------------- //
 export default function FridgeScreen() {
   const { fridgeItems } = useFridge();
   const [activeFilter, setActiveFilter] = useState('all');
@@ -32,8 +92,17 @@ export default function FridgeScreen() {
     const groups: Record<string, any[]> = {};
 
     fridgeItems.forEach((item) => {
-      const cat = item.category ? item.category : 'Other';
-      if (activeFilter !== 'all' && cat.toLowerCase() !== activeFilter.toLowerCase()) return;
+      // Normalize Category:
+      // API might return 'carbs', we map it to 'grain'
+      let cat = item.category ? item.category.toLowerCase() : 'other';
+      if (cat === 'carbs') cat = 'grain';
+      if (cat === 'condiment') cat = 'other';
+      
+      // If category isn't in our strict list, dump it in 'other'
+      if (!CATEGORY_ORDER.includes(cat)) cat = 'other';
+
+      // Apply Filter
+      if (activeFilter !== 'all' && cat !== activeFilter) return;
 
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(item);
@@ -42,19 +111,13 @@ export default function FridgeScreen() {
     return groups;
   }, [fridgeItems, activeFilter]);
 
+  // use the table to match each food with an image
   const getFoodImage = (iconName: string | null) => {
-    switch (iconName) {
-      case 'tomato':
-        return require('../../assets/images/food/carrot.png');
-      case 'carrot':
-        return require('../../assets/images/food/carrot.png');
-      case 'potato':
-        return require('../../assets/images/food/carrot.png');
-      case 'chicken':
-        return require('../../assets/images/food/carrot.png');
-      default:
-        return require('../../assets/images/food/carrot.png');
+    console.log("Getting image for icon name: %s", iconName);
+    if (iconName && FOOD_IMAGES[iconName]) {
+      return FOOD_IMAGES[iconName];
     }
+    return FOOD_IMAGES['default'];
   };
 
   return (

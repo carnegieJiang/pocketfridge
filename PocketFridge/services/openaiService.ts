@@ -39,9 +39,20 @@ export async function parseReceipt(base64Image: string) {
                 "category": "vegetable",
                 "date_added": "2026-02-10",  // Use current date in YYYY-MM-DD format
                 "date_expiring": "2026-02-17" // Use current date + expiration_days in YYYY-MM-DD format
+                "icon_name": "carrot"
               }
             ]
           }
+          For "icon_name", choose the BEST match from this exact list of available icons. 
+          If the food is "Steak" or "Beef", use "beefsteak".
+          If the food is "Bread", use "wheatbread".
+          If no exact match exists, pick the closest category representative (e.g. use "broccoli" for generic greens, or null if totally unsure).
+          
+          AVAILABLE ICONS: 
+          [beefsteak, broccoli, butter, carrot, chickenbreast, chickenbroth, cucumber, egg, garlic, 
+          greenbean, greenbellpepper, heavycream, impossibleburger, jalapeno, ketchup, lime, milk, 
+          parmesan, peanutbutter, potato, redbellpepper, rigatoni, salmon, shallot, shrimp, 
+          spaghetti, tomato, tomatopaste, wheatbread, yogurt]
           the category can only be one of: vegetable, fruit, carbs, meat, seafood, dairy, condiment, or other. 
           For "expiration_days", use your general knowledge to estimate how long the food lasts in a fridge (e.g., Milk = 7, Rice = 4, Canned Goods = 365).
           Do not include markdown formatting.`
