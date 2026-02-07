@@ -138,12 +138,11 @@ export default function RecipeScreen() {
 
       {/* BOTTOM GREEN GRADIENT */}
       <LinearGradient
-        colors={["#3D8D15", "74AF36"]}
-        // 55° vector: (cos55, sin55) ≈ (0.40, 0.82)
-        start={{ x: 0, y: 0.2 }}
-        end={{ x: 0.4, y: 1.5 }}
-        style={styles.bottomGreen}
-      >
+  colors={["#3D8D15", "#74AF36"]}
+  start={{ x: 0, y: 0.2 }}
+  end={{ x: 0.57, y: 1 }}
+  style={styles.bottomGreen}
+>
         <View style={styles.recipesHeaderRow}>
           <Text style={styles.recipesHeaderText}>Recipes</Text>
           <Text style={styles.filterIcon}>▾</Text>
