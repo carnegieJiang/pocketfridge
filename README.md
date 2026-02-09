@@ -1,2 +1,2 @@
 # pocketfridge
-tartanhacks 2026 - kai, sean, arielle, barbara
+tartanhacks 2026 project - sean, barbara, kai, arielle
